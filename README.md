@@ -3,7 +3,7 @@
 
 
 # 前言
-> 东放航空推出3322周末随心飞后，机票异常难免。这个项目就是因为我也买了这个套餐，需要一点取巧的方法来捡漏刷票而存在的，这样可以说是一劳半年内都可以用。
+> 东方航空推出3322周末随心飞后，机票异常难买。这个项目就是因为我也买了这个套餐，需要一点取巧的方法来捡漏刷票而存在的，这样可以说是一劳半年内都可以用。
 
 #原理
 
@@ -42,6 +42,7 @@ curl $'http://www.ceair.com/otabooking/flight-search\u0021doFlightSearch.shtml' 
 唯一需要注意的是 chromedriver 版本是 （83.0.4103.39） 对应 chrome 的 83.x系列
 需要自行匹配 chromedriver 和 chrome的版本
 mac 可以用 main.go_darwin_amd64.app (注：一定是命令行启动，否则自动退出)
+
 [镜像包下载](http://npm.taobao.org/mirrors/chromedriver/)
 
 [版本对应查看](https://sites.google.com/a/chromium.org/chromedriver/downloads)
