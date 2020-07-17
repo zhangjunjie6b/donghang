@@ -1,15 +1,13 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"fyne.io/fyne"
-	"fyne.io/fyne/app"
-	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
-	url2 "net/url"
+	"gopkg.in/gomail.v2"
 	"os"
 	"regexp"
 	"strings"
@@ -19,70 +17,46 @@ import (
 var button *widget.Button
 
 func main()  {
+	var starting        string //出发
+	var target    		string //到达
+	var depDt       	string //出发时间
+	var shitf        	string //航班编码
+
+	var help        	bool //命令行帮助
 
 
-	app := app.NewWithID("io.phpzjj.demo")
-	app.SetIcon(theme.FyneLogo())
-	w := app.NewWindow("东航周末随心飞监控软件")
-	w.Resize(fyne.NewSize(500,600))
+	flag.StringVar(&starting, "s", "", "出发地点")
+	flag.StringVar(&target, "t", "", "到达地点")
+	flag.StringVar(&depDt, "dt", "", "出发时间")
+	flag.StringVar(&shitf, "c", "", "航班编号")
+	flag.BoolVar(&help, "h", false, "帮助")
+
+	flag.Parse()
+
+	if help {
+		flag.Usage = usage
+		flag.Usage()
+
+		os.Exit(0)
+	}
 
 
-	//起点
-	starting := widget.NewEntry()
-	starting.SetPlaceHolder("start")
-
-	//终点
-	target := widget.NewEntry()
-	target.SetPlaceHolder("target")
-
-
-	//起飞时间
-	depDt := widget.NewEntry()
-	depDt.SetPlaceHolder("depDt (eg:2020-08-02)")
-
-
-	code := widget.NewEntry()
-	code.SetPlaceHolder("code")
-
-	info := widget.NewMultiLineEntry()
-	entryLoremIpsumScroller := widget.NewVScrollContainer(info)
-	entryLoremIpsumScroller.SetMinSize(fyne.NewSize(500,500))
-
-	link,_ := url2.Parse("http://www.ceair.com/booking/sha-xnn-200801_CNY.html")
-
-
-	hyperlink := widget.NewHyperlink("click to get URL", link)
-
-
-	button = widget.NewButton("start", func() {
-		info.SetText("Start ->  [" + code.Text + "]")
-		go start(starting.Text, target.Text, depDt.Text, code.Text, app, info)
-	})
-
-
-	w.SetContent(widget.NewVBox(
-		starting,
-		target,
-		depDt,
-		hyperlink,
-		code,
-		button,
-		widget.NewButton("quit", func() {
-			app.Quit()
-		}),
-		entryLoremIpsumScroller,
-	))
-
-	defer app.Quit()
-
-	w.SetFixedSize(true)
-	w.ShowAndRun()
+	start(starting, target, depDt, shitf)
 }
 
-func start(starting string, target string, depDt string,code string, app fyne.App, info *widget.Entry) {
 
-	button.SetText("ing")
-	button.Disable()
+
+func usage() {
+	fmt.Fprintf(os.Stderr, `东航随心飞抢票工具 
+
+使用: dh [-s 出发地] [-t 到达地点] [-dt 出发时间] [-c 航班编号]
+
+选项:
+`)
+	flag.PrintDefaults()
+}
+
+func start(starting string, target string, depDt string,code string) {
 
 	for true {
 
@@ -92,7 +66,7 @@ func start(starting string, target string, depDt string,code string, app fyne.Ap
 		if html == "false" {
 			now := time.Now()
 			dateString := fmt.Sprintf("%d-%d-%d %d:%d:%d",now.Year(),now.Month(),now.Day(),now.Hour(),now.Minute(),now.Second())
-			info.SetText( dateString +"    ----->   no! \n" + info.Text)
+			fmt.Println(dateString +" ----->  意外中断 \n")
 		}
 
 		doc,_ := goquery.NewDocumentFromReader(strings.NewReader(html))
@@ -109,12 +83,22 @@ func start(starting string, target string, depDt string,code string, app fyne.Ap
 				if(match) {
 					now := time.Now()
 					dateString := fmt.Sprintf("%d-%d-%d %d:%d:%d",now.Year(),now.Month(),now.Day(),now.Hour(),now.Minute(),now.Second())
-					info.SetText( dateString +"    ----->   no \n" + info.Text)
+					fmt.Println(dateString +" ----->  查询无余票 \n")
 				} else {
-					app.SendNotification(&fyne.Notification{
-						Title: "随心飞提示:",
-						Content: "有余票",
-					})
+					//TODO 实现一个高可达的通知
+					m := gomail.NewMessage()
+					m.SetHeader("From", "alex@example.com")
+					m.SetHeader("To", "bob@example.com", "cora@example.com")
+					m.SetAddressHeader("Cc", "dan@example.com", "Dan")
+					m.SetHeader("Subject", "Hello!")
+					m.SetBody("text/html", "Hello <b>Bob</b> and <i>Cora</i>!")
+
+					d := gomail.NewDialer("smtp.example.com", 587, "user", "123456")
+
+					// Send the email to Bob, Cora and Dan.
+					if err := d.DialAndSend(m); err != nil {
+						panic(err)
+					}
 				}
 			}
 
@@ -159,26 +143,25 @@ func form (starting string, target string,  depDt string) string{
 			//"--disable-gpu",
 			"--disable-images",
 			//"--proxy-server=116.196.88.52:4444",
-			"--user-agent = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/604.4.7 (KHTML, like Gecko) Version/11.0.2 Safari/604.4.7", // 模拟user-agent，防反爬
+			"--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36", // 模拟user-agent，防反爬
 		},
 	}
 
 	/*caps.AddProxy(selenium.Proxy{
 		Type:          selenium.Manual,
 		SOCKSVersion:     5,
-		SOCKS:         "116.196.88.52:4444",
+		SOCKS:         "127.0.0.1:24000",
 		NoProxy: []string{
 			"http://www.ceair.com/upload/2018/9/20190925daxingjichang.jpg",
 			"http://www.ceair.com/ad/sytytd/202003/W020200312633151698975.png",
 			"http://static-cdn.ceair.com/resource/images/public/map-mark-old.png?v=zh_CN_18459",
 		},
-	})
-*/
+	})*/
+
 	caps.AddChrome(chromeCaps)
 
 
 	wd, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", port))
-
 
 
 	defer  wd.Quit()
@@ -193,6 +176,7 @@ func form (starting string, target string,  depDt string) string{
 	fmt.Println(ip)
 
 	if err := wd.Get("http://www.ceair.com"); err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 
@@ -204,6 +188,7 @@ func form (starting string, target string,  depDt string) string{
 	gg,err := wd.FindElement(selenium.ByClassName, "pop_wrap_close")
 
 	if err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 
@@ -213,6 +198,7 @@ func form (starting string, target string,  depDt string) string{
 	startElement,err := wd.FindElement(selenium.ByID, "label_ID_0")
 
 	if err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 
@@ -224,6 +210,7 @@ func form (starting string, target string,  depDt string) string{
 
 	drag,err := wd.FindElement(selenium.ByXPATH, "//body/div/div/div/div/div/div/div/ul/li[1]")
 	if err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 	drag.Click()
@@ -243,6 +230,7 @@ func form (starting string, target string,  depDt string) string{
 	time.Sleep(8*time.Second)
 	drag,err = wd.FindElement(selenium.ByXPATH, "//div//div//div//div//div//div//div[1]//ul[1]")
 	if err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 	drag.Click()
@@ -252,6 +240,7 @@ func form (starting string, target string,  depDt string) string{
 
 	depDtElement,err := wd.FindElement(selenium.ByID, "depDt")
 	if err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 	depDtElement.Click()
@@ -261,6 +250,7 @@ func form (starting string, target string,  depDt string) string{
 
 	depDtCloseElement,err := wd.FindElement(selenium.ByXPATH, "//html//body")
 	if err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 	depDtCloseElement.Click()
@@ -268,6 +258,7 @@ func form (starting string, target string,  depDt string) string{
 	//点击提交
 	btn,err := wd.FindElement(selenium.ByID, "btn_flight_search")
 	if err != nil {
+		fmt.Print(err)
 		return "false"
 	}
 	btn.Click()
