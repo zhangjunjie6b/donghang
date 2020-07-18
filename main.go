@@ -8,8 +8,10 @@ import (
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
 	"gopkg.in/gomail.v2"
+	"math/rand"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -114,11 +116,16 @@ func start(starting string, target string, depDt string,code string) {
 表单操作提取数据
 */
 func form (starting string, target string,  depDt string) string{
+
+	rand.Seed(time.Now().UnixNano())
+
+	port := 8*1000 + rand.Intn(9)*100 + rand.Intn(9)*10 + rand.Intn(9)
+
+	fmt.Println("随机chromedriver端口:" + strconv.Itoa(port))
+
 	pwd, _ := os.Getwd()
 	seleniumPath := pwd+"/chromedriver"
-	const (
-		port            = 8080
-	)
+
 	opts := []selenium.ServiceOption{
 
 	}
