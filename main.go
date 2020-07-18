@@ -17,6 +17,7 @@ import (
 var button *widget.Button
 
 func main()  {
+
 	var starting        string //出发
 	var target    		string //到达
 	var depDt       	string //出发时间
@@ -85,15 +86,14 @@ func start(starting string, target string, depDt string,code string) {
 					dateString := fmt.Sprintf("%d-%d-%d %d:%d:%d",now.Year(),now.Month(),now.Day(),now.Hour(),now.Minute(),now.Second())
 					fmt.Println(dateString +" ----->  查询无余票 \n")
 				} else {
-					//TODO 实现一个高可达的通知
+					//TODO 实现一个高可达的通知， 把邮件配置文件配置化
 					m := gomail.NewMessage()
-					m.SetHeader("From", "alex@example.com")
-					m.SetHeader("To", "bob@example.com", "cora@example.com")
-					m.SetAddressHeader("Cc", "dan@example.com", "Dan")
-					m.SetHeader("Subject", "Hello!")
-					m.SetBody("text/html", "Hello <b>Bob</b> and <i>Cora</i>!")
+					m.SetHeader("From", "=?utf-8?b?55uR5o6n5bCP5Yqp5omL?= <@163.com>")
+					m.SetHeader("To", "@qq.com")
+					m.SetHeader("Subject", "东航监控提示")
+					m.SetBody("text/html", "<b>监控到有票！</b> ")
 
-					d := gomail.NewDialer("smtp.example.com", 587, "user", "123456")
+					d := gomail.NewDialer("smtp.163.com", 25, "@163.com", "")
 
 					// Send the email to Bob, Cora and Dan.
 					if err := d.DialAndSend(m); err != nil {
