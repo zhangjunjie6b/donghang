@@ -2,6 +2,9 @@
 ![](https://pic.phpzjj.com/mweb/2020/07/08/9741f45a530330324a89474bff01fbc0.jpg)
 
 
+# CLI
+* [CLI版本](https://github.com/zhangjunjie6b/donghang/tree/CommandLine) 传送门
+
 # 前言
 > 东方航空推出3322周末随心飞后，机票异常难买。这个项目就是因为我也买了这个套餐，需要一点取巧的方法来捡漏刷票而存在的，这样可以说是一劳半年内都可以用。
 
