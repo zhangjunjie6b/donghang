@@ -1,9 +1,34 @@
-# GUI
-![](https://pic.phpzjj.com/mweb/2020/07/08/9741f45a530330324a89474bff01fbc0.jpg)
+# CLI
+* [GUI版本](https://github.com/zhangjunjie6b/donghang) 传送门
 
+```cassandraql
+
+东航随心飞抢票工具
+
+使用: dh [-s 出发地] [-t 到达地点] [-dt 出发时间] [-c 航班编号]
+
+选项:
+  -c string
+    	航班编号
+  -dt string
+    	出发时间
+  -h	帮助
+  -s string
+    	出发地点
+  -t string
+    	到达地点
+
+```
 
 # 前言
 > 东方航空推出3322周末随心飞后，机票异常难买。这个项目就是因为我也买了这个套餐，需要一点取巧的方法来捡漏刷票而存在的，这样可以说是一劳半年内都可以用。
+
+声明 
+> 我也知道代码有诸多不完善的地方诸如
+* 一个main文件没有解耦开来
+* 邮件通知不可配置必须自己编译，通知未设置频率
+* 各种兼容问题，没有封装成docker包
+> 就上述问题我持着知道但是不会去改的态度，因为这是一个具有时效性的非团队软件。
 
 #原理
 
@@ -38,25 +63,37 @@ curl $'http://www.ceair.com/otabooking/flight-search\u0021doFlightSearch.shtml' 
 
 # 安装
 
-> go mod 全部定义好了有环境直接编译或者运行就可以正常跑起来了，
-唯一需要注意的是 chromedriver 版本是 （83.0.4103.39） 对应 chrome 的 83.x系列
-需要自行匹配 chromedriver 和 chrome的版本
-mac 可以用 main.go_darwin_amd64.app (注：一定是命令行启动，否则自动退出)
+> cli 版本主要是用于服务器上，因此安装分2部
+
+## 安装 linux chrome
+
+
+1. 下载 [chrome](https://www.google.cn/intl/zh-CN/chrome/) 最下方找到 `其他平台` 下载Linux版
+2. rpm -ivh [下载文件名]
+
+或者直接yum安装
+
+```cassandraql
+yum install google-chrome-stable.x86_64
+```
+
+## 找到对应版本的chromedriver
 
 [镜像包下载](http://npm.taobao.org/mirrors/chromedriver/)
-
 [版本对应查看](https://sites.google.com/a/chromium.org/chromedriver/downloads)
+
+
+## 运行
+
+```cassandraql
+nohup ./main.x -c MU9501 -dt 2020-08-08 -s 上海 -t 潮汕 >> log.txt &
+```
 
 # 技术调用
 
 * [selenium的GO库](https://godoc.org/github.com/tebeka/selenium#Capabilities.AddLogging)
-* [GUI](https://github.com/fyne-io/fyne)
 
 
-# 可扩展方向
-
-> 如果这是一个可以盈利的点子，我会去掉GUI把它服务端化。然后套上IP代理池，做个前端UI来实现收费监控。
-> 但是鉴于 3322 的时效性和宣传的乏力我还是放弃了这一块时间的投入，毕竟现在就这样是够用的，比隔几分钟自己拿出手机看看来得好
 
 
 
